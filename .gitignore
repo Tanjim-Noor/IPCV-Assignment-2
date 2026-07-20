@@ -1,0 +1,54 @@
+# Python and Jupyter
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Local datasets (retain directory placeholders)
+implementation/data/raw/*
+implementation/data/interim/*
+implementation/data/processed/*
+implementation/data/test/*
+!implementation/data/raw/.gitkeep
+!implementation/data/interim/.gitkeep
+!implementation/data/processed/.gitkeep
+!implementation/data/test/.gitkeep
+
+# Model checkpoints and exported weights
+implementation/models/*
+!implementation/models/.gitkeep
+*.ckpt
+*.h5
+*.joblib
+*.onnx
+*.pkl
+*.pt
+*.pth
+*.safetensors
+
+# Generated prediction files can be large; curated figures and metrics remain trackable
+implementation/outputs/predictions/*
+!implementation/outputs/predictions/.gitkeep
