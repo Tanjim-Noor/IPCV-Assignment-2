@@ -8,6 +8,13 @@
 
 Treat `Assignment Requirements/CT103-3-M-IPCV Assignment - Part 2 (APUMF2604AI).pdf` as the primary brief and `Assignment Requirements/assignment-2-requirements.md` as its working, consolidated checklist with the lecturer's Teams clarification.
 
+## Mandatory method constraint
+
+- Deep learning is strictly prohibited in every phase, including preprocessing, feature extraction, detection, segmentation, recognition, evaluation, and inference.
+- Do not use CNNs, RNNs, autoencoders, transformers, YOLO, U-Net, Mask R-CNN, SAM, CLIP, deep embeddings, pretrained deep features, hosted deep-learning APIs, or deep-learning components hidden behind a library call.
+- Any non-deep-learning library or package is allowed. Prefer classical image processing and conventional machine learning such as colour/texture/shape features, HOG, SIFT/ORB, thresholding, morphology, contours, watershed/GrabCut, clustering, PCA, SVM, k-NN, random forests, or boosting.
+- Check the underlying method of every dependency before adopting it. If a technique may rely on deep learning, do not use it unless the lecturer explicitly confirms it is permitted in writing.
+
 ## Repository map
 
 - `Assignment Requirements/`: source brief, consolidated requirements, and source images.
@@ -24,6 +31,7 @@ Treat `Assignment Requirements/CT103-3-M-IPCV Assignment - Part 2 (APUMF2604AI).
 
 - Keep raw data immutable. Record each dataset's source, licence, class definitions, and download date in `implementation/data/README.md` before use.
 - Keep notebooks reproducible, numbered, and runnable from top to bottom. Move reusable logic into `implementation/src/`.
+- Keep the complete implementation classical and auditable; document handcrafted features, algorithms, parameters, and decision rules.
 - Save report-ready evidence under `implementation/outputs/`; do not use screenshots when an exported figure or table is available.
 - Write sections in `report/sections/`, then assemble and reconcile them in `report/final-report.md`.
 - Cite external datasets, code, methods, models, and text in APA style. Never present third-party or AI-assisted work as solely your own.

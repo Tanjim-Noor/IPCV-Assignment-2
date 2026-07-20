@@ -17,12 +17,22 @@ This document combines the official six-page assignment brief with the lecturer'
 | Recommended report length | Approximately 3,000-3,500 words |
 | Due date | 11:59 pm, 9 August 2026 |
 | Permitted development tools | Python or MATLAB |
+| Mandatory method constraint | Deep learning is strictly prohibited at every implementation phase |
 
 ## 2. Problem context and assignment goal
 
 Universities need a professional environment, but manual dress-code inspection is labour-intensive and can be inconsistent, subjective, and affected by human error or bias. The assignment therefore requires an automated image-processing and computer-vision system that identifies attire and assesses whether it complies with the university's professional dress-code standards in settings such as classrooms, libraries, and common areas.
 
 The primary project goal is to develop an advanced system that accurately detects and evaluates appropriate and inappropriate attire. The solution must demonstrate both high-level understanding and practical analysis of reusable imaging algorithms and programming techniques.
+
+### 2.1 Mandatory non-deep-learning constraint
+
+The lecturer's further clarification permits any technique, library, or package provided that it does **not** use deep learning. Deep learning is strictly prohibited throughout data preparation, feature extraction, detection, segmentation, recognition, training, evaluation, and inference.
+
+- Prohibited methods include CNNs, RNNs, autoencoders, transformers, YOLO, U-Net, Mask R-CNN, SAM, CLIP, deep embeddings, pretrained deep feature extractors, hosted deep-learning APIs, and library functions backed by deep models.
+- Permitted approaches include classical image processing, handcrafted colour/texture/shape features, HOG, SIFT/ORB, thresholding, morphology, contours, watershed/GrabCut, clustering, PCA, SVM, k-NN, random forests, and boosting.
+- Libraries and packages may be used freely only when the selected component is non-deep-learning. The underlying algorithm must be checked, named, justified, and documented.
+- If a method's implementation is unclear or may contain a deep model, exclude it unless the lecturer explicitly approves it in writing.
 
 ## 3. Dress-code conditions
 
@@ -159,6 +169,8 @@ The lecturer supplied the following additional report guidance:
 ### System and experiments
 
 - [ ] The selected dataset is documented with its source, licence, classes, limitations, and suitability.
+- [ ] No deep-learning model, pretrained deep feature, hosted deep-learning API, or hidden deep-learning component is used at any phase.
+- [ ] Every library-dependent technique is verified as non-deep-learning and its underlying algorithm is documented.
 - [ ] The system detects relevant people, garments, or attire regions.
 - [ ] The system performs or clearly demonstrates segmentation.
 - [ ] The system recognises attire categories or compliance-relevant attributes.
@@ -192,6 +204,7 @@ The lecturer supplied the following additional report guidance:
 
 If this working document conflicts with an authoritative instruction, follow this order and ask the lecturer when ambiguity remains:
 
-1. The original assignment PDF.
-2. Later written clarification from the lecturer, represented by the Teams screenshot.
-3. This consolidated working document and repository templates.
+1. The latest explicit lecturer clarification, including the strict prohibition on deep learning.
+2. The original assignment PDF.
+3. Other written clarification from the lecturer, represented by the Teams screenshot.
+4. This consolidated working document and repository templates.
