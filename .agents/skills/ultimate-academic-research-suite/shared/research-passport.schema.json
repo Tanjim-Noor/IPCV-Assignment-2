@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/ultimate-academic-research-suite/research-passport.schema.json",
+  "title": "Ultimate Academic Research Suite Research Passport",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "workflow",
+    "research",
+    "evidence",
+    "experiments",
+    "decisions",
+    "artifacts",
+    "review",
+    "integrity",
+    "certification",
+    "next_action"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "project": {
+      "type": "object",
+      "required": ["deliverable", "language", "audience", "venue", "citation_style", "output_format"],
+      "properties": {
+        "deliverable": {"type": "string", "minLength": 1},
+        "language": {"type": "string", "minLength": 1},
+        "audience": {"type": "string", "minLength": 1},
+        "venue": {"type": ["string", "null"]},
+        "citation_style": {"type": ["string", "null"]},
+        "output_format": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "workflow": {
+      "type": "object",
+      "required": ["route", "mode", "current_stage", "writing_phase", "checkpoint", "revision_round"],
+      "properties": {
+        "route": {
+          "enum": ["deep-research", "writing", "academic-paper-reviewer", "experiment-agent", "unified-pipeline"]
+        },
+        "mode": {"type": "string", "minLength": 1},
+        "current_stage": {"type": ["string", "number"]},
+        "writing_phase": {"type": ["string", "null"]},
+        "checkpoint": {"type": ["string", "null"]},
+        "revision_round": {"type": "integer", "minimum": 0, "maximum": 2}
+      },
+      "additionalProperties": true
+    },
+    "research": {
+      "type": "object",
+      "required": ["approved_question", "scope", "design", "search_protocol", "corpus_version"],
+      "properties": {
+        "approved_question": {"type": ["string", "null"]},
+        "scope": {"type": ["object", "null"]},
+        "design": {"type": ["object", "string", "null"]},
+        "search_protocol": {"type": ["object", "null"]},
+        "corpus_version": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["sources", "claim_mappings"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "citation_locator", "verification_state", "human_read"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "citation_locator": {"type": ["string", "null"]},
+              "verification_state": {
+                "enum": ["unverified", "verified", "failed", "stale", "not-applicable"]
+              },
+              "human_read": {"type": "boolean"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "claim_mappings": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": true
+    },
+    "experiments": {
+      "type": "object",
+      "required": ["intake_declared", "execution_approved", "records"],
+      "properties": {
+        "intake_declared": {"type": "boolean"},
+        "execution_approved": {"type": "boolean"},
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "status", "provenance"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "status": {"enum": ["planned", "approved", "running", "completed", "failed"]},
+              "provenance": {"type": "object"}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["decision", "actor", "timestamp"],
+        "properties": {
+          "decision": {"type": "string", "minLength": 1},
+          "actor": {"enum": ["user", "agent", "reviewer", "system"]},
+          "timestamp": {"type": "string", "format": "date-time"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "path", "version", "sha256", "parent_artifacts", "verification_state"],
+        "properties": {
+          "type": {"type": "string", "minLength": 1},
+          "path": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "parent_artifacts": {"type": "array", "items": {"type": "string"}},
+          "verification_state": {"enum": ["unverified", "verified", "failed", "stale"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": ["issues"],
+      "properties": {
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "comment", "commitment", "response", "revision_location", "resolution_state"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "comment": {"type": "string", "minLength": 1},
+              "commitment": {"type": ["string", "null"]},
+              "response": {"type": ["string", "null"]},
+              "revision_location": {"type": ["string", "null"]},
+              "resolution_state": {"enum": ["open", "accepted", "rejected-with-rationale", "resolved"]}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "integrity": {
+      "type": "object",
+      "required": ["status", "stale", "checks", "critical_findings"],
+      "properties": {
+        "status": {"enum": ["PASS", "PASS-WITH-WARNINGS", "FAIL", "INSUFFICIENT-EVIDENCE"]},
+        "stale": {"type": "boolean"},
+        "checks": {"type": "array", "items": {"type": "object"}},
+        "critical_findings": {"type": "array", "items": {"type": "object"}}
+      },
+      "additionalProperties": true
+    },
+    "certification": {
+      "type": "object",
+      "required": ["status", "venue_formatting_complete", "rendered_output_inspected", "administrative_complete"],
+      "properties": {
+        "status": {"enum": ["planned", "drafted", "audited-with-issues", "verified", "submission-ready"]},
+        "venue_formatting_complete": {"type": "boolean"},
+        "rendered_output_inspected": {"type": "boolean"},
+        "administrative_complete": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "next_action": {
+      "type": "object",
+      "required": ["gate", "responsible_party", "required_inputs"],
+      "properties": {
+        "gate": {"type": ["string", "null"]},
+        "responsible_party": {"enum": ["user", "agent", "reviewer", "none"]},
+        "required_inputs": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "certification": {
+            "properties": {"status": {"enum": ["verified", "submission-ready"]}},
+            "required": ["status"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "integrity": {
+            "properties": {
+              "status": {"enum": ["PASS", "PASS-WITH-WARNINGS"]},
+              "stale": {"const": false},
+              "critical_findings": {"maxItems": 0}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "certification": {
+            "properties": {"status": {"const": "submission-ready"}},
+            "required": ["status"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "certification": {
+            "properties": {
+              "venue_formatting_complete": {"const": true},
+              "rendered_output_inspected": {"const": true},
+              "administrative_complete": {"const": true}
+            }
+          }
+        }
+      }
+    }
+  ]
+}

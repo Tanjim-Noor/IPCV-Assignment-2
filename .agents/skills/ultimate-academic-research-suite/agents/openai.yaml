@@ -1,0 +1,7 @@
+interface:
+  display_name: "Ultimate Academic Research Suite"
+  short_description: "Research, write, review, and verify scholarly work"
+  default_prompt: "Use $ultimate-academic-research-suite to run an evidence-grounded academic research workflow."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "academic_research_suite": {
+    "source": "Imbad0202/academic-research-skills-codex",
+    "sourceType": "github",
+    "ref": "efdbc2a4a74ae3482e63535bbbcb2a125066d5de",
+    "commit": "efdbc2a4a74ae3482e63535bbbcb2a125066d5de",
+    "skillPath": "skills/academic-research-suite/SKILL.md",
+    "computedHash": "4c2595e878ef6b032259f6aafa5ad950644d8503e0086824b5eb873c990224e3",
+    "license": "CC-BY-NC-4.0",
+    "intendedUse": "Research control plane, review, experiment, integrity, and pipeline runtime",
+    "fileCount": 1049,
+    "arsCommit": "17c518b286e48bbcd19fa7d05ec4f7d2aeb01641",
+    "experimentAgentCommit": "9b063fa895eaf1f63ac99ac03f924f8d31aa8d26"
+  },
+  "academic_writing": {
+    "source_path": ".agents/skills/academic-writing",
+    "tree_sha256": "ef389f460f0b6a6a49824a7b76a82865ad8d9cb628b103057f37bad60506b509",
+    "file_count": 57,
+    "embedded_entrypoint": "writing/WORKFLOW.md"
+  }
+}
