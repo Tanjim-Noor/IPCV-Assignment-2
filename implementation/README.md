@@ -1,6 +1,6 @@
 # Implementation Workspace
 
-This directory keeps the dataset, staged experiments, reusable Python code, trained artifacts, and evidence for the report together. Fashionpedia 2020 is the primary component-training and in-domain evaluation source. A consented, deidentified university-context set will provide external evaluation.
+This directory keeps the dataset, staged experiments, reusable Python code, trained artifacts, and evidence for the report together. Fashionpedia 2020 is the sole source for training, validation, testing, and approved qualitative demonstrations. Results therefore measure performance within the Fashionpedia fashion-image domain, not on real university photographs.
 
 ## Recommended execution order
 
@@ -15,11 +15,30 @@ This directory keeps the dataset, staged experiments, reusable Python code, trai
 | 07 | Evaluation and error analysis | Quantitative validation and analysed failure cases |
 | 08 | Inference and demo | End-to-end inference examples and ScreenCam-ready workflow |
 
-Each stage directory contains a starter notebook. Run them in numeric order and keep notebooks executable from top to bottom.
+Run the completed notebooks in numeric order. Notebook 08 is the standalone end-to-end demonstration and uses `TRAIN_IF_MISSING=True` with non-destructive train-if-missing behaviour.
+
+## Environment and commands
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python implementation/src/build_dataset_manifests.py
+python implementation/src/train_classical_pipeline.py --profile smoke
+python implementation/src/infer_attire.py path\to\image.jpg --bundle-dir implementation/models/classical-attire-smoke
+```
+
+`requirements-lock.txt` records the exact laptop acceptance environment; use it when an exact Python 3.14 Windows reproduction is required.
+
+For the final desktop run, replace `smoke` with `full`, then run:
+
+```powershell
+python implementation/src/evaluate_classical_pipeline.py --bundle-dir implementation/models/classical-attire-full
+```
 
 ## Storage rules
 
-- `data/raw/`: immutable downloaded or collected source data.
+- `data/raw/`: immutable downloaded Fashionpedia source data.
 - `data/interim/`: validated, extracted, or relabelled intermediate data.
 - `data/processed/`: model-ready splits and derived annotations.
 - `data/test/`: held-out or demonstration inputs that are safe to retain locally.
@@ -33,7 +52,9 @@ Document data provenance before acquisition. The implementation must remain enti
 
 ## Compute roles
 
-- Use the 32 GB desktop for full feature extraction, cross-validation, and training.
+- Use the 32 GB desktop for full feature extraction, internal-validation tuning, and training.
 - Keep cached features under ignored `data/interim/` or `data/processed/` paths as batched `float32` arrays.
 - Keep a CPU-compatible inference path so the trained system and demonstration remain runnable on the laptop.
 - Require at least 40 GB of desktop working space before full feature extraction.
+- The RTX 3080 is not used: HOG, GrabCut, handcrafted features, linear SVMs, and SGD logistic models all run on CPU.
+- The default 512-pixel maximum side bounds classical sliding-window cost while preserving aspect ratio.

@@ -19,6 +19,7 @@ class RuleStatus(str, Enum):
     FAIL = "fail"
     UNKNOWN = "unknown"
     NOT_APPLICABLE = "not_applicable"
+    UNSUPPORTED = "unsupported"
 
 
 class ComplianceDecision(str, Enum):
@@ -39,6 +40,8 @@ class RuleResult:
     evidence_region: str | None = None
     reason: str | None = None
     required: bool = True
+    severity: str = "conditional"
+    supported: bool = True
 
     def __post_init__(self) -> None:
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
@@ -107,7 +110,8 @@ def decide_compliance(
         for rule in rules
         if rule.required
         and (
-            rule.status in {RuleStatus.UNKNOWN, RuleStatus.NOT_APPLICABLE}
+            rule.status
+            in {RuleStatus.UNKNOWN, RuleStatus.NOT_APPLICABLE, RuleStatus.UNSUPPORTED}
             or (rule.confidence is not None and rule.confidence < minimum_confidence)
         )
     ]

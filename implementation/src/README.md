@@ -6,7 +6,7 @@ Keep notebook code focused on experiment configuration, execution, and interpret
 
 ## Dataset policy utilities
 
-`ipcv_attire.dataset_policy` validates Fashionpedia annotations, derives compliance-relevant labels, creates duplicate-group-aware splits, produces local image and annotation manifests, and blocks unapproved images from presentation code.
+`ipcv_attire.dataset_policy` validates Fashionpedia annotations, derives compliance-relevant targets and image-level decisions, creates duplicate-group-aware splits, produces local image and annotation manifests, and blocks unapproved images from presentation code.
 
 Generate the manifests after downloading Fashionpedia:
 
@@ -24,10 +24,34 @@ python implementation/src/render_showcase_candidates.py --acknowledge-unreviewed
 
 The sheets remain under ignored `data/interim/showcase-review/`. They are never report-ready by themselves.
 
-`ipcv_attire.compliance` exposes the auditable `COMPLIANT`, `NON_COMPLIANT`, and `REVIEW_REQUIRED` interface. It combines explicit rule results only; it does not contain a learned model.
+Generated image manifests include the derived compliance label, prohibited rules found, and required evidence that is missing. The labelled Fashionpedia validation split is the locked quantitative test; unlabelled test images are qualitative-only and still require showcase approval.
 
-Run the standard-library tests with:
+`ipcv_attire.compliance` exposes the auditable `COMPLIANT`, `NON_COMPLIANT`, and `REVIEW_REQUIRED` interface. It combines explicit rule results only; it does not contain a learned model. `derive_compliance_label` applies the tracked Fashionpedia-supported rule set to annotation-derived targets.
+
+## End-to-end classical API
+
+`ipcv_attire.pipeline.AttirePipeline` joins deterministic preprocessing, four HOG-linear-SVM component detectors, GrabCut segmentation, handcrafted recognition features, uncertainty thresholds, outfit grouping, and complete rule explanations:
+
+```python
+from ipcv_attire import AttirePipeline
+
+pipeline = AttirePipeline.load("implementation/models/classical-attire-full")
+report = pipeline.analyze("input.jpg")
+print(report.to_dict())
+```
+
+Train and evaluate from the repository root:
 
 ```powershell
-python -m unittest discover implementation/tests -v
+python implementation/src/train_classical_pipeline.py --profile smoke
+python implementation/src/train_classical_pipeline.py --profile full --bundle-dir implementation/models/classical-attire-full
+python implementation/src/evaluate_classical_pipeline.py --bundle-dir implementation/models/classical-attire-full
+```
+
+The model bundle records its own SHA-256, policy SHA-256, environment, features, trained targets, profile, and thresholds. Models and float32 feature caches stay ignored. The full profile performs one hard-negative-mining pass; the smoke profile is an acceptance test, not report evidence.
+
+Run the test suite with the project environment:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s implementation/tests -v
 ```

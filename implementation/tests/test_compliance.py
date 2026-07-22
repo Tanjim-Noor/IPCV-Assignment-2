@@ -57,6 +57,20 @@ class ComplianceDecisionTests(unittest.TestCase):
         )
         self.assertEqual(result.decision, ComplianceDecision.REVIEW_REQUIRED)
 
+    def test_non_required_unsupported_rule_is_reported_but_not_blocking(self) -> None:
+        result = decide_compliance(
+            [
+                RuleResult("collared_top", RuleStatus.PASS, 0.9),
+                RuleResult(
+                    "piercings",
+                    RuleStatus.UNSUPPORTED,
+                    required=False,
+                    supported=False,
+                ),
+            ]
+        )
+        self.assertEqual(result.decision, ComplianceDecision.COMPLIANT)
+
 
 if __name__ == "__main__":
     unittest.main()

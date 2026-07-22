@@ -41,7 +41,7 @@ Downloaded data is local and excluded from Git. Keep the original archives and s
 
 ## Final use policy
 
-Fashionpedia is retained without manually screening every training-only image. The complete metadata is audited, but feature extraction and training use only garment instances that contribute to a supported dress-code target. All report, notebook, demonstration, and submitted example images must be explicitly approved in `showcase-manifest.csv`.
+Fashionpedia is the only dataset used by the system. The complete metadata is audited, but feature extraction and training use only garment instances that contribute to a supported dress-code target. Sensitive examples remain available for learning inappropriate-attire classes, while every image displayed in a report, notebook, demonstration, or submission must be automatically risk-filtered and explicitly approved in `showcase-manifest.csv`.
 
 The tracked `dataset-policy.json` is the source of truth for:
 
@@ -66,9 +66,11 @@ The split builder groups records by normalized original source URL, stratifies b
 
 ### Supported and review-required conditions
 
-Composite models may be trained for collared tops, allowed sleeve lengths, round-neck casual tops, revealing tops, formal-bottom candidates, casual/tight bottoms, damaged bottoms, footwear presence, and headwear presence. A standalone target is supported only when it has at least 100 positive training images and 20 positive locked-validation images.
+Composite models may be trained for collared tops, allowed sleeve lengths, round-neck casual tops, revealing tops, formal-bottom candidates, casual/tight bottoms, damaged bottoms, skorts, leisurewear, footwear presence, and headwear presence. A standalone target is supported only when it has at least 100 positive training images and 20 positive locked-validation images.
 
-The Fashionpedia labels cannot reliably establish tucked-in status, open-toe footwear subtype, excessive piercings, customary headgear, bare-back or spaghetti-strap distinctions, or skorts as a standalone class. These conditions must produce `REVIEW_REQUIRED`; they must never be guessed from gender, culture, or appearance.
+The operational rule set is stored in `dataset-policy.json`. A prohibited target takes precedence and produces `NON_COMPLIANT`. An image is `COMPLIANT` only when a collared top, allowed sleeve, formal-bottom candidate, and footwear are all evidenced and no prohibited target is present. Incomplete or uncertain evidence produces `REVIEW_REQUIRED`.
+
+Fashionpedia cannot reliably establish tucked-in status, excessive piercings, exact open-toe footwear subtype, or whether headgear is customary. Formal bottoms are proxied as pants without jeans or casual-bottom attributes, footwear is limited to presence, and a Fashionpedia hat is treated as prohibited headwear. These limitations must be reported rather than guessed from gender, culture, or appearance.
 
 ## Presentation safety
 
@@ -78,9 +80,12 @@ The Fashionpedia labels cannot reliably establish tucked-in status, open-toe foo
 - Rejected statuses record content, quality, domain, rights, or ambiguous-age concerns without deleting the immutable source image.
 - Aggregate metrics may use the full relevant test set, but automatic error visualisation may only use approved images.
 
-## University-context external test
+## Fashionpedia-only evaluation
 
-Collect 100 single-person images from 8-12 consenting adults, balanced between compliant and university-safe non-compliant outfits. This set is a locked external test and must not be used for training or threshold selection. See `university-test-protocol.md` for consent, privacy, capture, annotation, and mask requirements.
+- Split the official training annotations by duplicate group into model training and internal validation partitions.
+- Reserve the official labelled validation split as the locked final quantitative test.
+- Use official unlabelled test images only for qualitative demonstrations after the same showcase approval gate.
+- Do not claim university-domain validation or collect additional photographs. The fashion-to-university domain gap is a documented limitation.
 
 ## Manifest audit result
 
@@ -88,11 +93,12 @@ The full builder was executed against the local 2020 release on 22 July 2026:
 
 - 48,823 image files were indexed with no missing references.
 - 342,172 valid annotations were retained; 10 zero-area source annotations were recorded and excluded.
-- 42,141 images contribute to at least one derived recognition target.
+- 42,125 images contribute to at least one derived recognition target.
 - 22,267 images were automatically flagged as unsuitable for showcase candidacy.
-- The grouped deterministic split contains 36,873 training, 8,750 internal-validation, 1,158 locked labelled-test, and 2,042 unlabelled qualitative-only images.
-- All nine composite targets pass the configured standalone support gate after garment-part annotations are handled correctly.
-- Two hundred non-risk-flagged images were shortlisted for manual review. None is report-approved until `showcase-manifest.csv` records an explicit approval.
+- The grouped deterministic split contains 36,889 training, 8,734 internal-validation, 1,158 locked labelled-test, and 2,042 unlabelled qualitative-only images; no duplicate group crosses training and internal validation.
+- The image-level operational rules yield 1,665 compliant, 21,011 non-compliant, and 24,105 review-required labelled images.
+- Ten of the eleven derived targets pass the standalone support gate. Skort has only five positive training images and no internal-validation or locked-test positives, so it remains a rule target but cannot support a standalone learned classifier.
+- Two hundred non-risk-flagged images were shortlisted for manual review. Forty non-revealing examples passed contact-sheet review and are explicitly approved in `showcase-manifest.csv`; every other Fashionpedia image remains blocked from presentation.
 
 ## Local immutable layout
 

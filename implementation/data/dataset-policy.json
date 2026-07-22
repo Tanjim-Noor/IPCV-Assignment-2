@@ -1,5 +1,5 @@
 {
-  "policy_version": 1,
+  "policy_version": 3,
   "dataset": "Fashionpedia 2020",
   "split_seed": 20260722,
   "internal_validation_fraction": 0.2,
@@ -61,7 +61,21 @@
       "cargo (pants)",
       "track (pants)"
     ],
+    "formal_bottom_exclusions": [
+      "jeans",
+      "sweatpants",
+      "leggings",
+      "cargo (pants)",
+      "track (pants)"
+    ],
     "damaged_bottoms": ["distressed", "frayed"],
+    "skorts": ["skort"],
+    "leisurewear": [
+      "trunks",
+      "boardshorts",
+      "lounge (shorts)",
+      "nightgown"
+    ],
     "display_risk": [
       "crop (top)",
       "halter (top)",
@@ -97,9 +111,76 @@
     "formal_bottom_candidate",
     "casual_or_tight_bottom",
     "damaged_bottom",
+    "skort_bottom",
+    "leisurewear",
     "footwear_present",
     "headwear_present"
   ],
+  "compliance_rules": {
+    "required_evidence": [
+      "collared_top",
+      "allowed_sleeve",
+      "formal_bottom_candidate",
+      "footwear_present"
+    ],
+    "prohibited_evidence": [
+      "casual_round_neck_top",
+      "revealing_top",
+      "casual_or_tight_bottom",
+      "damaged_bottom",
+      "skort_bottom",
+      "leisurewear",
+      "headwear_present"
+    ],
+    "unsupported_conditions": [
+      "tucked_in_shirt",
+      "excessive_body_piercings",
+      "open_toe_footwear_subtype",
+      "customary_headgear_exception"
+    ],
+    "proxies": {
+      "formal_bottom_candidate": "Pants without jeans or casual-bottom attributes; Fashionpedia has no direct slacks, trousers, or khakis label.",
+      "footwear_present": "A shoe instance confirms footwear presence but not whether the footwear is open-toed or otherwise permitted.",
+      "headwear_present": "A Fashionpedia hat instance is treated as prohibited headwear because customary use is not annotated."
+    },
+    "default_thresholds": {
+      "low": 0.35,
+      "high": 0.65,
+      "minimum_decided_coverage": 0.8
+    },
+    "rule_definitions": {
+      "collared_top": {"label": "Collared top", "region": "upper_body", "kind": "required", "severity": "conditional", "model_supported": true},
+      "allowed_sleeve": {"label": "Allowed sleeve length", "region": "upper_body", "kind": "required", "severity": "conditional", "model_supported": true},
+      "formal_bottom_candidate": {"label": "Formal bottom proxy", "region": "bottom_body", "kind": "required", "severity": "conditional", "model_supported": true},
+      "footwear_present": {"label": "Footwear present", "region": "footwear", "kind": "required", "severity": "conditional", "model_supported": true},
+      "casual_round_neck_top": {"label": "Round-neck casual top", "region": "upper_body", "kind": "prohibited", "severity": "immediate", "model_supported": true},
+      "revealing_top": {"label": "Revealing top", "region": "upper_body", "kind": "prohibited", "severity": "immediate", "model_supported": true},
+      "casual_or_tight_bottom": {"label": "Casual or tight bottom", "region": "bottom_body", "kind": "prohibited", "severity": "immediate", "model_supported": true},
+      "damaged_bottom": {"label": "Damaged bottom", "region": "bottom_body", "kind": "prohibited", "severity": "immediate", "model_supported": true},
+      "skort_bottom": {"label": "Skort", "region": "bottom_body", "kind": "prohibited", "severity": "immediate", "model_supported": false},
+      "leisurewear": {"label": "Leisurewear", "region": "bottom_body", "kind": "prohibited", "severity": "immediate", "model_supported": true},
+      "headwear_present": {"label": "Headwear present", "region": "headwear", "kind": "prohibited", "severity": "immediate", "model_supported": true}
+    }
+  },
+  "pipeline": {
+    "maximum_image_side": 512,
+    "minimum_image_side": 32,
+    "grabcut_iterations": 5,
+    "minimum_mask_area_ratio": 0.05,
+    "maximum_mask_area_ratio": 0.95,
+    "nms_iou_threshold": 0.35,
+    "maximum_detections_per_component": 8,
+    "component_groups": {
+      "upper_body": ["shirt, blouse", "top, t-shirt, sweatshirt", "sweater", "cardigan", "jacket", "vest", "coat", "dress", "jumpsuit"],
+      "bottom_body": ["pants", "tights, stockings", "shorts", "skirt"],
+      "footwear": ["shoe"],
+      "headwear": ["hat"]
+    },
+    "recognition_targets": {
+      "upper_body": ["collared_top", "allowed_sleeve", "casual_round_neck_top", "revealing_top"],
+      "bottom_body": ["formal_bottom_candidate", "casual_or_tight_bottom", "damaged_bottom", "leisurewear"]
+    }
+  },
   "showcase": {
     "approved_status": "approved",
     "valid_statuses": [

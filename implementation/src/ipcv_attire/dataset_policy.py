@@ -29,6 +29,9 @@ MANIFEST_FIELDS = (
     "category_names",
     "attribute_names",
     "derived_targets",
+    "compliance_label",
+    "failed_rules",
+    "missing_required_rules",
     "relevant",
     "display_risk",
     "showcase_status",
@@ -57,10 +60,43 @@ def load_policy(path: str | Path) -> dict[str, Any]:
 
     policy_path = Path(path)
     policy = json.loads(policy_path.read_text(encoding="utf-8"))
-    required = {"policy_version", "categories", "attributes", "derived_targets", "showcase"}
+    required = {
+        "policy_version",
+        "categories",
+        "attributes",
+        "derived_targets",
+        "compliance_rules",
+        "pipeline",
+        "showcase",
+    }
     missing = required - policy.keys()
     if missing:
         raise ValueError(f"Dataset policy is missing keys: {sorted(missing)}")
+    known_targets = set(policy["derived_targets"])
+    required_targets = set(policy["compliance_rules"]["required_evidence"])
+    prohibited_targets = set(policy["compliance_rules"]["prohibited_evidence"])
+    unknown_targets = (required_targets | prohibited_targets) - known_targets
+    if unknown_targets:
+        raise ValueError(f"Compliance rules reference unknown targets: {sorted(unknown_targets)}")
+    overlap = required_targets & prohibited_targets
+    if overlap:
+        raise ValueError(f"Compliance targets cannot be both required and prohibited: {sorted(overlap)}")
+    definitions = policy["compliance_rules"].get("rule_definitions", {})
+    missing_definitions = known_targets - definitions.keys()
+    if missing_definitions:
+        raise ValueError(
+            f"Derived targets are missing rule definitions: {sorted(missing_definitions)}"
+        )
+    recognition_targets = {
+        target
+        for targets in policy["pipeline"].get("recognition_targets", {}).values()
+        for target in targets
+    }
+    unknown_recognition = recognition_targets - known_targets
+    if unknown_recognition:
+        raise ValueError(
+            f"Recognition configuration references unknown targets: {sorted(unknown_recognition)}"
+        )
     return policy
 
 
@@ -135,6 +171,7 @@ def derive_targets(
     sleeve_region = category_name == "sleeve"
     neckline_region = category_name == "neckline"
     casual_bottom_attributes = set(attribute_groups["casual_bottoms"])
+    formal_bottom_exclusions = set(attribute_groups["formal_bottom_exclusions"])
 
     targets = {
         "collared_top": (upper or collar_region)
@@ -146,13 +183,16 @@ def derive_targets(
         "revealing_top": (upper or neckline_region or sleeve_region)
         and bool(attributes & set(attribute_groups["revealing_tops"])),
         "formal_bottom_candidate": category_name == "pants"
-        and not bool(attributes & casual_bottom_attributes),
+        and not bool(attributes & formal_bottom_exclusions),
         "casual_or_tight_bottom": (
             category_name == "tights, stockings"
             or (bottoms and bool(attributes & casual_bottom_attributes))
         ),
         "damaged_bottom": bottoms
         and bool(attributes & set(attribute_groups["damaged_bottoms"])),
+        "skort_bottom": category_name == "shorts"
+        and bool(attributes & set(attribute_groups["skorts"])),
+        "leisurewear": bool(attributes & set(attribute_groups["leisurewear"])),
         "footwear_present": category_name in set(category_groups["footwear"]),
         "headwear_present": category_name in set(category_groups["headwear"]),
     }
@@ -160,6 +200,42 @@ def derive_targets(
     if set(targets) != expected:
         raise ValueError("Policy target names do not match the implemented target derivation")
     return targets
+
+
+def derive_compliance_label(
+    derived_targets: Iterable[str],
+    policy: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Derive an auditable image-level label from Fashionpedia-supported targets.
+
+    Prohibited evidence takes precedence. An image is compliant only when all
+    required proxy evidence is present and no prohibited target is present.
+    Everything else remains review-required rather than being guessed.
+    """
+
+    present = set(derived_targets)
+    known = set(policy["derived_targets"])
+    unknown = present - known
+    if unknown:
+        raise ValueError(f"Cannot evaluate unknown derived targets: {sorted(unknown)}")
+
+    rules = policy["compliance_rules"]
+    required = list(rules["required_evidence"])
+    prohibited = list(rules["prohibited_evidence"])
+    failed = [target for target in prohibited if target in present]
+    missing = [target for target in required if target not in present]
+
+    if failed:
+        label = "non_compliant"
+    elif not missing:
+        label = "compliant"
+    else:
+        label = "review_required"
+    return {
+        "compliance_label": label,
+        "failed_rules": failed,
+        "missing_required_rules": missing,
+    }
 
 
 def _duplicate_group(image: Mapping[str, Any]) -> str:
@@ -240,6 +316,8 @@ def _image_records(
             {"categories": set(), "attributes": set(), "targets": set()},
         )
         attributes = sorted(aggregate["attributes"])
+        targets = sorted(aggregate["targets"])
+        compliance = derive_compliance_label(targets, policy)
         records.append(
             {
                 "image_id": image_id,
@@ -257,7 +335,8 @@ def _image_records(
                 "duplicate_group": _duplicate_group(image),
                 "category_names": sorted(aggregate["categories"]),
                 "attribute_names": attributes,
-                "derived_targets": sorted(aggregate["targets"]),
+                "derived_targets": targets,
+                **compliance,
                 "relevant": bool(aggregate["targets"]),
                 "display_risk": bool(set(attributes) & display_risk_names),
                 "showcase_status": "",
@@ -332,8 +411,18 @@ def _load_showcase_statuses(path: Path, valid_statuses: set[str]) -> dict[str, s
         return statuses
 
 
-def require_showcase_approval(image_id: str | int, showcase_manifest: str | Path) -> None:
-    """Fail closed unless an image is explicitly approved for presentation."""
+def require_showcase_approval(
+    image_id: str | int,
+    showcase_manifest: str | Path,
+    *,
+    display_risk: bool,
+) -> None:
+    """Fail closed unless an image is both low-risk and explicitly approved."""
+
+    if display_risk:
+        raise PermissionError(
+            f"Fashionpedia image {image_id} is display-risk flagged; rendering is blocked."
+        )
 
     path = Path(showcase_manifest)
     statuses = _load_showcase_statuses(
@@ -421,6 +510,9 @@ def _add_unlabelled_test_images(
                 "category_names": [],
                 "attribute_names": [],
                 "derived_targets": [],
+                "compliance_label": "",
+                "failed_rules": [],
+                "missing_required_rules": [],
                 "relevant": False,
                 "display_risk": False,
                 "showcase_status": "",
@@ -546,6 +638,15 @@ def build_manifest_bundle(
             for record in image_records
         ),
         "candidate_showcase_images": len(candidates),
+        "compliance_labels": dict(
+            sorted(
+                Counter(
+                    record["compliance_label"]
+                    for record in image_records
+                    if record["compliance_label"]
+                ).items()
+            )
+        ),
         "target_support": support,
     }
     output.mkdir(parents=True, exist_ok=True)
