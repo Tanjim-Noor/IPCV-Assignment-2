@@ -21,19 +21,26 @@ Run the completed notebooks in numeric order. Notebook 08 is the standalone end-
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python implementation/src/build_dataset_manifests.py
-python implementation/src/train_classical_pipeline.py --profile smoke
-python implementation/src/infer_attire.py path\to\image.jpg --bundle-dir implementation/models/classical-attire-smoke
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe scripts\run_all_notebooks.py
 ```
 
-`requirements-lock.txt` records the exact laptop acceptance environment; use it when an exact Python 3.14 Windows reproduction is required.
+The runner executes every numbered notebook in order with the repository root as its working directory and continues through later stages after a failure. It returns a non-zero exit code if any stage fails. It does not modify the source notebooks by default. Add `--write-results` only when execution counts and outputs should be saved into the notebooks. Use `--timeout 1800` for slow local cells if needed.
+
+`requirements.txt` contains the direct runtime and notebook-execution dependencies. `requirements-lock.txt` records the exact Python 3.13 Windows environment used for this acceptance run.
+
+The equivalent reusable-pipeline commands are:
+
+```powershell
+.\.venv\Scripts\python.exe implementation/src/build_dataset_manifests.py
+.\.venv\Scripts\python.exe implementation/src/train_classical_pipeline.py --profile smoke
+.\.venv\Scripts\python.exe implementation/src/infer_attire.py path\to\image.jpg --bundle-dir implementation/models/classical-attire-smoke
+```
 
 For the final desktop run, replace `smoke` with `full`, then run:
 
 ```powershell
-python implementation/src/evaluate_classical_pipeline.py --bundle-dir implementation/models/classical-attire-full
+.\.venv\Scripts\python.exe implementation/src/evaluate_classical_pipeline.py --bundle-dir implementation/models/classical-attire-full
 ```
 
 ## Storage rules

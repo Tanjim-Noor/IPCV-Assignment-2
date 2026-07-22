@@ -31,6 +31,10 @@ Treat `Assignment Requirements/CT103-3-M-IPCV Assignment - Part 2 (APUMF2604AI).
 
 - Keep raw data immutable. Record each dataset's source, licence, class definitions, and download date in `implementation/data/README.md` before use.
 - Keep notebooks reproducible, numbered, and runnable from top to bottom. Move reusable logic into `implementation/src/`.
+- Use the repository-local `.venv` for all Python and pip commands. On Windows PowerShell, use `.\.venv\Scripts\python.exe -m pip install -r requirements.txt` and `.\.venv\Scripts\python.exe ...` rather than a global interpreter.
+- The direct notebook/runtime dependencies belong in `requirements.txt`; `requirements-lock.txt` records the accepted local freeze. Keep `nbclient`, `ipykernel`, and `nbformat` explicit because the numbered notebooks are executed programmatically.
+- Run all stages with `.\.venv\Scripts\python.exe scripts\run_all_notebooks.py`. The runner uses the repository root as the working directory, executes stages in numeric order, continues to report later-stage failures, and fails overall if any notebook fails. It leaves source notebooks unchanged unless `--write-results` is supplied.
+- Do not run the stages before Fashionpedia is present under `implementation/data/raw/fashionpedia/` and the dataset register is complete. The raw dataset and generated model/data artifacts are intentionally excluded from Git.
 - Keep the complete implementation classical and auditable; document handcrafted features, algorithms, parameters, and decision rules.
 - Save report-ready evidence under `implementation/outputs/`; do not use screenshots when an exported figure or table is available.
 - Write sections in `report/sections/`, then assemble and reconcile them in `report/final-report.md`.
