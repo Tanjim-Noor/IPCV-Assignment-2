@@ -6,7 +6,11 @@ Downloaded data is local and excluded from Git. Keep the original archives and s
 
 | Candidate | Source URL | Licence | Images/subjects | Labels/annotations | Dress-code relevance | Main limitations | Decision |
 | --- | --- | --- | ---: | --- | --- | --- | --- |
-| Fashionpedia | [Official project](https://fashionpedia.github.io/home/index.html) | Annotations/ontology: CC BY 4.0; image rights remain with original sources | 48,823 files in the current official archives | 46 apparel categories/parts, 294 attributes, boxes, and instance masks | Collars, sleeves, tops, pants, cargo styles, skorts, distressed garments, necklines, hats, and shoes | Fashion/web domain rather than university scenes; not every policy condition is labelled | **Selected and downloaded** |
+| Fashionpedia | [Official project](https://fashionpedia.github.io/home/index.html) | Annotations/ontology: CC BY 4.0; image rights remain with original sources | 48,823 local images | 46 apparel categories/parts, 294 attributes, boxes, and instance masks | Strongest available mapping to collars, sleeves, tops, pants, casual bottoms, distressed garments, necklines, hats, and shoes | Fashion/web domain; sensitive presentation content; several policy conditions are missing | **Primary source retained** |
+| ModaNet | [Official repository](https://github.com/eBay/modanet) | Annotation data: CC BY-NC 4.0 | 55,176 street-fashion images | Polygon masks for 13 meta-categories | Detection and segmentation | Same fashion-domain concern, fewer compliance attributes | Rejected as a replacement |
+| LIP | [Official resource page](https://www.sysu-hcp.net/resources/datasets/index.html) | Non-commercial research/teaching terms | More than 50,000 person images | 19 coarse human-part labels | General human parsing | Insufficient collar, neckline, cargo, and distressed-style detail | Rejected as a replacement |
+| SYSU-Clothes/CCP | [Official dataset page](https://cse.sysu.edu.cn/hcp/article/146) | Verify terms before use | 2,098 street-fashion images | 59 tags; 1,000+ pixel-labelled images | Small clothing-parsing benchmark | Smaller and still fashion-oriented | Rejected as a replacement |
+| Open Images V7 | [Official description](https://storage.googleapis.com/openimages/web/factsfigures_v7.html) | Annotations: CC BY 4.0; image licences require verification | Approximately 9 million images | Broad boxes and masks | Potential contextual diversity | Training masks used neural-network-assisted annotation; excluded under the strict method rule | Rejected |
 
 ## Selection criteria
 
@@ -34,6 +38,61 @@ Downloaded data is local and excluded from Git. Keep the original archives and s
 - **Deep-learning restriction:** The dataset is method-neutral, but its published deep-learning baselines must not be used. All detection, segmentation, feature extraction, recognition, and compliance logic in this project must use classical image processing or conventional non-deep-learning machine learning.
 - **Known limitations and bias risks:** Images are drawn from fashion, street-style, celebrity, runway, and shopping contexts rather than APU. Labels do not directly encode compliance, tucked-in shirts, all footwear subtypes, excessive piercings, or whether headgear is customary. Class and attribute imbalance, web-image selection bias, cultural variation, and domain shift must be measured and discussed.
 - **Planned split:** Derive training and internal validation subsets from the official training split, grouping detected duplicates before splitting. Reserve the 1,158 publicly labelled official validation images as a locked final test set. Use the remaining unlabelled official test images only for qualitative demonstrations unless they are independently annotated.
+
+## Final use policy
+
+Fashionpedia is retained without manually screening every training-only image. The complete metadata is audited, but feature extraction and training use only garment instances that contribute to a supported dress-code target. All report, notebook, demonstration, and submitted example images must be explicitly approved in `showcase-manifest.csv`.
+
+The tracked `dataset-policy.json` is the source of truth for:
+
+- relevant garment categories and attributes;
+- derived recognition targets;
+- the university-safe display-risk filter;
+- minimum class-support thresholds;
+- deterministic split seed and ratio; and
+- valid showcase-review statuses.
+
+The generated local manifests are:
+
+```text
+interim/manifests/
+├── fashionpedia-images.csv
+├── fashionpedia-annotations.csv
+├── manifest-summary.json
+└── showcase-candidates.csv
+```
+
+The split builder groups records by normalized original source URL, stratifies by the multi-label target signature, assigns 80% to training and 20% to internal validation, and leaves the official labelled validation split locked. A later perceptual-hash audit must merge any visually duplicated groups before final model training.
+
+### Supported and review-required conditions
+
+Composite models may be trained for collared tops, allowed sleeve lengths, round-neck casual tops, revealing tops, formal-bottom candidates, casual/tight bottoms, damaged bottoms, footwear presence, and headwear presence. A standalone target is supported only when it has at least 100 positive training images and 20 positive locked-validation images.
+
+The Fashionpedia labels cannot reliably establish tucked-in status, open-toe footwear subtype, excessive piercings, customary headgear, bare-back or spaghetti-strap distinctions, or skorts as a standalone class. These conditions must produce `REVIEW_REQUIRED`; they must never be guessed from gender, culture, or appearance.
+
+## Presentation safety
+
+- Metadata automatically rejects high-risk crop, halter, camisole, tank, tube, plunging, off-shoulder, micro/mini, swim/leisure, cut-out, and similar attributes from the candidate display pool.
+- Metadata is not sufficient for content review. Every displayed Fashionpedia image requires a manual `approved` row in `showcase-manifest.csv`.
+- Rendering code must call `require_showcase_approval` before loading a Fashionpedia image.
+- Rejected statuses record content, quality, domain, rights, or ambiguous-age concerns without deleting the immutable source image.
+- Aggregate metrics may use the full relevant test set, but automatic error visualisation may only use approved images.
+
+## University-context external test
+
+Collect 100 single-person images from 8-12 consenting adults, balanced between compliant and university-safe non-compliant outfits. This set is a locked external test and must not be used for training or threshold selection. See `university-test-protocol.md` for consent, privacy, capture, annotation, and mask requirements.
+
+## Manifest audit result
+
+The full builder was executed against the local 2020 release on 22 July 2026:
+
+- 48,823 image files were indexed with no missing references.
+- 342,172 valid annotations were retained; 10 zero-area source annotations were recorded and excluded.
+- 42,141 images contribute to at least one derived recognition target.
+- 22,267 images were automatically flagged as unsuitable for showcase candidacy.
+- The grouped deterministic split contains 36,873 training, 8,750 internal-validation, 1,158 locked labelled-test, and 2,042 unlabelled qualitative-only images.
+- All nine composite targets pass the configured standalone support gate after garment-part annotations are handled correctly.
+- Two hundred non-risk-flagged images were shortlisted for manual review. None is report-approved until `showcase-manifest.csv` records an explicit approval.
 
 ## Local immutable layout
 
@@ -66,6 +125,7 @@ Validation completed after download:
 - Every image referenced by the training and validation annotations exists locally.
 - Every annotation refers to a known image ID.
 - A deterministic sample of 100 extracted images passed Pillow decoding.
+- Ten training annotations have zero-area boxes. Their links are valid, the raw JSON remains unchanged, and the manifest builder records and excludes them from model-ready data.
 
 ## Data lifecycle
 

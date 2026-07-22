@@ -1,0 +1,117 @@
+{
+  "policy_version": 1,
+  "dataset": "Fashionpedia 2020",
+  "split_seed": 20260722,
+  "internal_validation_fraction": 0.2,
+  "minimum_support": {
+    "training_positive_images": 100,
+    "locked_validation_positive_images": 20
+  },
+  "categories": {
+    "upper_body": [
+      "shirt, blouse",
+      "top, t-shirt, sweatshirt",
+      "sweater",
+      "cardigan",
+      "jacket",
+      "vest",
+      "coat",
+      "dress",
+      "jumpsuit"
+    ],
+    "bottom_body": ["pants", "tights, stockings"],
+    "footwear": ["shoe"],
+    "headwear": ["hat"],
+    "garment_parts": ["collar", "sleeve", "neckline"]
+  },
+  "attributes": {
+    "collars": [
+      "regular (collar)",
+      "shirt (collar)",
+      "polo (collar)",
+      "banded (collar)",
+      "mandarin (collar)"
+    ],
+    "allowed_sleeves": [
+      "short (length)",
+      "elbow-length",
+      "three quarter (length)",
+      "wrist-length"
+    ],
+    "casual_round_neck_tops": [
+      "classic (t-shirt)",
+      "crew (neck)",
+      "round (neck)"
+    ],
+    "revealing_tops": [
+      "crop (top)",
+      "halter (top)",
+      "camisole",
+      "tank (top)",
+      "tube (top)",
+      "sleeveless",
+      "plunging (neckline)",
+      "halter (neck)",
+      "off-the-shoulder",
+      "one shoulder"
+    ],
+    "casual_bottoms": [
+      "sweatpants",
+      "leggings",
+      "cargo (pants)",
+      "track (pants)"
+    ],
+    "damaged_bottoms": ["distressed", "frayed"],
+    "display_risk": [
+      "crop (top)",
+      "halter (top)",
+      "camisole",
+      "tank (top)",
+      "tube (top)",
+      "booty (shorts)",
+      "trunks",
+      "boardshorts",
+      "lounge (shorts)",
+      "halter (dress)",
+      "slip (dress)",
+      "sundress",
+      "bodycon (dress)",
+      "nightgown",
+      "low waist",
+      "micro (length)",
+      "mini (length)",
+      "sleeveless",
+      "plunging (neckline)",
+      "halter (neck)",
+      "off-the-shoulder",
+      "one shoulder",
+      "cutout",
+      "slit"
+    ]
+  },
+  "derived_targets": [
+    "collared_top",
+    "allowed_sleeve",
+    "casual_round_neck_top",
+    "revealing_top",
+    "formal_bottom_candidate",
+    "casual_or_tight_bottom",
+    "damaged_bottom",
+    "footwear_present",
+    "headwear_present"
+  ],
+  "showcase": {
+    "approved_status": "approved",
+    "valid_statuses": [
+      "pending",
+      "approved",
+      "rejected_content",
+      "rejected_quality",
+      "rejected_domain",
+      "rejected_rights",
+      "rejected_ambiguous_age"
+    ],
+    "candidate_count": 200,
+    "minimum_approved_images": 40
+  }
+}
